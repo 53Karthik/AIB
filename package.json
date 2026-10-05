@@ -14,7 +14,8 @@
     "test": "node --test \"server/**/*.test.js\"",
     "verify:real": "node scripts/verify-real.js",
     "mapping:extract": "node scripts/extract-mapping.js",
-    "data:load": "node scripts/load-data.js"
+    "data:load": "node scripts/load-data.js",
+    "data:extend-october": "node scripts/extend-demo-as-of.js && node scripts/load-data.js"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "^0.33.4",

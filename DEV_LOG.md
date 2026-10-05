@@ -252,6 +252,17 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
 - [x] E2 `npm run build`, then a browser walk-through of the dashboard, extracts, month views, pack PDF and intelligence.
 - [x] E3 `npm run verify:real` and `npm test` still green.
 
+### Phase F - September/October data extension (2026-10-01)
+- [x] F1 Check the original source files, current runtime snapshot, and available Git baselines; document restoration without resetting the branch.
+- [ ] F2 Resolve whether the extension uses generated demo records or newer supplied extracts.
+- [ ] F3 Build/import a consistent later snapshot; verify September complete and October present but incomplete when observed in October.
+
+### Phase G - End-to-end governance explanation (2026-10-05)
+- [x] G1 Trace upload, content classification, slot replacement, parsing, normalisation, rule evaluation, monthly roll-up and persistence against the implementation.
+- [x] G2 Explain every JSON boundary and distinguish multipart upload, in-memory JavaScript objects, JSON configuration, JSON persistence and JSON API transport.
+- [x] G3 Map Dashboard, Extracts, SLA position, Exceptions, Governance pack and Intelligence to their APIs and backend producers.
+- [x] G4 Add a worked 23B UL Step 2 record and a code/function index in `docs/end-to-end-governance-flow.md`.
+
 
 ---
 
@@ -465,3 +476,55 @@ Note: the "exit code 127" notices for background servers were the servers stoppe
 - The Bedrock narrative passes both guards, and every pass/fail it states is correct.
 
 **Next:** user review in the browser (`npm run dev`). Nothing is on `main`. Merging or opening a PR is the user's call.
+
+### Iteration 4 - 2026-10-01 - Original-data recovery and reporting-period audit
+
+**Goal:** Answer the recovery question before extending September and adding October records.
+
+**Changes**
+- `docs/data-flow.md`: documented the original baseline, reload commands, targeted source restoration, snapshot replacement, and September/October completeness.
+- `DEV_LOG.md`: added Phase F and this audit entry.
+- `CLAUDE.md`: refreshed the working branch and recorded recovery/extension pitfalls.
+- Source extracts, runtime data, engine code, and Git branches were not changed. The dataset choice is awaiting user input.
+
+**Errors faced**
+
+| # | Symptom | Root cause | Fix |
+|---|---|---|---|
+| E4.1 | Initial Git commands reported no repository | Workspace root is one level above the repository | Ran Git commands from `AIB/` |
+| E4.2 | Git warned that the global ignore file was inaccessible | Local filesystem permissions | Repository commands still succeeded; inspected the repository's own ignore rules |
+| E4.3 | Inline Node audit failed with a syntax error | Windows command argument handling removed embedded quotes | Used the existing verification script and PowerShell JSON parsing |
+| E4.4 | Listening-port lookup returned exit code 1 and no output | No matching listener was returned; errors were suppressed by the lookup | No server operation depended on the result; no server was changed |
+
+**Verification**
+- `npm run verify:real`: passed, zero row and monthly-summary differences for both CSV and XLSX sets, as of 2026-09-24.
+- `git diff ba7fa6f -- Claude_Data`: no differences.
+- Runtime snapshot: as of 2026-09-24, 17,869 source records and 12,254 measured items.
+- Git audit: `Karthik` and `omkar/Ommkar` at `ba7fa6f`; local `main` and `backup-karthik` at `fcb17ec`, before BaNCS integration.
+
+**Next:** Resolve the requested dataset type. Extend a separate demo copy if generated records are chosen, or import newer supplied extracts. Keep the original verification dataset intact.
+
+### Iteration 5 - 2026-10-05 - End-to-end governance flow guide
+
+**Goal:** Explain the complete file-to-frontend flow, including rule execution, calculation, storage, JSON boundaries and every governance feature shown in the presentation.
+
+**Changes**
+- `docs/end-to-end-governance-flow.md`: added a detailed plain-language architecture guide, sequence diagram, upload/parser/storage trace, actual 23B UL Step 2 worked example, rate and 23B pooling formulas, JSON boundary matrix, API/frontend mapping, governance-feature walkthrough and audit lineage.
+- `DEV_LOG.md`: added completed Phase G and this iteration entry.
+- `CLAUDE.md`: refreshed current status and recorded the verified JSON-boundary clarification.
+- No engine, configuration, source extract or runtime data was changed.
+
+**Errors faced**
+
+| # | Symptom | Root cause | Fix |
+|---|---|---|---|
+| E5.1 | The first combined inspection command ended with a Python `UnicodeEncodeError` while printing PowerPoint text | The Windows console used cp1252 and one slide contained a Unicode arrow | Re-ran the read-only extraction with `PYTHONIOENCODING=utf-8`; all presentation text was read successfully |
+| E5.2 | Git again warned that the global ignore file was inaccessible | Local filesystem permissions outside the repository | No Git operation depended on it; repository status was still returned and no Git state was changed |
+
+**Verification**
+- Read all 17 slides of `AIB_Life_SLA_Governance_Presentation.pptx` and all 3 slides of `docs/AIB_Life_SLA_Governance_Project.pptx`; the guide covers the screens and flow shown there.
+- Traced the documented functions in `server/index.js`, `pipeline.js`, `store.js`, `slots.js`, every `server/engine/*` stage, `quality.js`, `insights.js`, `intelligence.js`, `src/api.js`, `App.jsx` and all six views.
+- Read an actual MISSED `23B_UL_S2` outcome from `data/analyses/2025-02.json` (policy `A90002283`, source row 213, workflow `7101283`) and used its stored evidence in the worked example.
+- Documentation-only change; application tests were not required to validate executable behaviour.
+
+**Next:** Use `docs/end-to-end-governance-flow.md` as the walkthrough companion for the existing presentation and live demonstration.

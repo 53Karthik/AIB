@@ -42,13 +42,13 @@ add a correction in the new entry.
 
 ## Current status
 
-_Last updated: 2026-09-24 · Iteration 3_
+_Last updated: 2026-10-05 - Iteration 5_
 
 - **Direction:** all demo logic is discarded. Everything follows `Claude_Data/` only. The UI
   keeps its visual design. Decisions D1–D7 are in DEV_LOG.md §3.
-- **Branch:** the working branch is **`Ommkar`**. HEAD was switched to it at 15:00:38 on
-  2026-09-24, outside Claude's commands. It holds every commit of this initiative.
-  `feature/real-bancs-data` stops at Iteration 1. **Never commit to `main`.**
+- **Branch:** the current working branch is **`Karthik`**, at `ba7fa6f`, also
+  referenced by `omkar/Ommkar`. Local `main` and `backup-karthik` are at
+  `fcb17ec`, before the BaNCS integration. **Never commit to `main`.**
 - **Done (plan phases A–E complete):**
   - The engine reproduces `SLA_Expected_Results.xlsx` exactly (0 diffs, csv and xlsx).
   - The backend builds 22 monthly packs from the extract set, auto-loaded on a cold start.
@@ -56,7 +56,13 @@ _Last updated: 2026-09-24 · Iteration 3_
     position, Exceptions, Governance pack, and Intelligence (including the guarded Bedrock
     narrative and Q&A).
   - README rewritten. `npm test` passes 24/24.
-- **Open:** user review. Merging or opening a PR is the user's decision.
+- **Open:** September/October dataset extension, pending the choice between
+  generated demo records and newer supplied extracts. Original CSV/XLSX files
+  remain unchanged and pass the oracle check. Recovery instructions are in
+  `docs/data-flow.md` section 12. Merging or opening a PR is the user's decision.
+- **Documentation:** `docs/end-to-end-governance-flow.md` now traces upload through
+  rule evaluation, monthly JSON persistence, APIs and every governance screen, with
+  an actual 23B UL Step 2 item as the worked example.
 
 ---
 
@@ -118,6 +124,13 @@ Claude_Data/*.csv|xlsx ─▶ engine/extracts (identify by columns) ─▶ engin
 Add to this list whenever something bites.
 
 **Real BaNCS data**
+- `data/` is ignored by Git: a hard reset does not restore deleted imported
+  extracts or rebuild packs. `npm run data:load` restores the original dataset
+  from committed `Claude_Data/`; stop the app before running it.
+- Moving the snapshot into October makes September non-partial, but pending
+  ages alone do not supply missing September activity. Use a consistent later
+  snapshot across all five slots and retain history because uploads replace
+  slots. Keep generated extensions separate from the original oracle dataset.
 - Date cells in the `.xlsx` extracts are Excel date-times. `parse.js` `cellText()`
   currently truncates them to `YYYY-MM-DD`, which **drops the time** needed for the 3pm and
   48h rules. In the `.csv` files they are `dd/mm/yyyy hh:mm:ss` strings.
@@ -151,7 +164,7 @@ Add to this list whenever something bites.
 
 **Project rules for git**
 - The user does **not** want changes on `main`. Commit on the current feature branch
-  (`Ommkar`). Run `git branch --show-current` before every commit, and never switch
+  (`Karthik` as of 2026-10-01). Run `git branch --show-current` before every commit, and never switch
   branches without being asked.
 
 - A pass/fail figure can be real and still stated backwards. The Bedrock narrative once said
@@ -166,6 +179,9 @@ Add to this list whenever something bites.
   extract. It is now rejected explicitly.
 - Charts: a month with one or two completed items can sit at 0%. Clip such values at the
   axis with a label rather than letting them set the scale.
+- JSON boundary: file upload is multipart bytes; rules evaluate in-memory JavaScript
+  objects, not JSON packets. JSON is used for config, persisted packs/snapshot/index,
+  API responses and the Q&A request body.
 
 **UI conventions**
 - Reuse the design system's classes and tokens (`card`, `stat`, `table`, `rag-*`,

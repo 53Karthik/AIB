@@ -10,6 +10,11 @@ month, from both the `.csv` and the `.xlsx` extracts (`npm run verify:real`).
 
 ## Run it
 
+To advance the bundled demo snapshot from 24 September to 1 October 2026, making September
+a completed reporting period, run `npm run data:extend-october`. This applies a clearly marked
+synthetic seven-day extension to the open-workflow CSV and rebuilds the runtime packs. It does
+not invent October transactions, so the dashboard still ends at September.
+
 ```bash
 npm install
 npm run dev        # API on :5174, UI on :5173
