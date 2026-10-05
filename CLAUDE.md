@@ -5,7 +5,7 @@ against contracted SLAs, and published as one governance pack per reporting mont
 Phase 2 intelligence layer (trends, breach risk, recurring causes, narrative, Q&A) runs on
 that history. Full product description: [README.md](README.md).
 
-**Current initiative:** integrating the real-format TCS BaNCS extracts in `Claude_Data/`.
+**Current initiative:** refresh the client demo video with current features, the existing report data and native Windows cursor artwork.
 The plan, the analysis and the iteration history all live in **[DEV_LOG.md](DEV_LOG.md)**.
 Read it before starting work.
 
@@ -42,7 +42,50 @@ add a correction in the new entry.
 
 ## Current status
 
-_Last updated: 2026-10-05 - Iteration 5_
+_Last updated: 2026-10-01 · Iteration 9_
+
+- **Amazon Nova connected:** local `.env` configures `amazon.nova-pro-v1:0` in
+  `us-east-1`. AWS identity and live invocation were verified; the app was restarted and
+  fresh report narrative and Q&A responses returned `source: bedrock`. Do not copy local
+  credentials into docs, code, browser assets or Git. The user was advised to rotate the
+  key shared in the conversation and update the local configuration.
+- `npm run bedrock:check` now tests the configured model through the app's adapter,
+  rather than probing Anthropic-only candidates. Narrative cache identity includes
+  provider, model and region as well as report facts; credential values are excluded.
+
+- **Governance pack access:** the report was never removed. A visible dashboard shortcut
+  now opens the latest complete month's pack (or the newest period if none is complete).
+  SLA Status and Exceptions also have a visible Governance pack button for their selected
+  month. Reports still lists it. Export as PDF opens the browser print window; choose
+  Save as PDF to download the report. The five report sections and calculations are unchanged.
+
+- **Customer terminology:** Data Sources, SLA Status, Policies and Reports now appear
+  throughout the working UI, findings, Intelligence answers and print packs. Vendor wording
+  is removed from presentation, including cached narrative text. Schedule 23 codes remain
+  unchanged at the user's explicit request. Policies are counted per service record.
+  Public hash routes use `#data-sources` and `#YYYY-MM/status`; old links remain supported.
+- **Deferred chatbot request:** the user wants LLM reasoning grounded in findings and report
+  evidence, with scope limits and supported predictions, instead of unrelated canned answers.
+  They explicitly postponed this work. AWS/Nova connectivity is now complete; fuller
+  context, reasoning, validation and supported predictions remain deferred. Existing
+  report-only prompts, numeric guards, rules fallback and single-turn Q&A are unchanged.
+
+- **Updated client demo video:** production artifacts are in `deliverables/client-demo-v2/`.
+  The refreshed 3:57 walkthrough uses current Data Sources/SLA Status/Policies/Reports copy,
+  actual Nova Pro narrative and Q&A, visible Governance pack shortcuts, and PDF export.
+  All five current files and all 22 months of results matched the isolated capture copy.
+  Windows arrow/hand cursor resources replace the old polygon. Narration is generated
+  offline with Microsoft Zira Desktop; the external voice-service call was blocked by
+  automatic approval review and no narration was sent to it in this iteration.
+  Final verification passed: 1080p/24fps, 48.9 MiB, 82 captions without overlaps, six working
+  chapter links and zero decode/browser errors. The original `deliverables/client-demo/` is retained.
+  Reproduction scripts are under `scripts/demo/`; intermediate work is `.demo-work/v2/`.
+
+- **Local application guide:** `public/application-guide.html` provides interactive architecture,
+  data flow, three user journeys, feature explanations and source references. A printable copy
+  is in `public/application-guide.pdf`; both are linked from README. The guide reflects the
+  current code, including Q&A's figure-only guard and the non-versioned filesystem store.
+  Both guide formats were refreshed with Iteration 7's customer terminology.
 
 - **Direction:** all demo logic is discarded. Everything follows `Claude_Data/` only. The UI
   keeps its visual design. Decisions D1–D7 are in DEV_LOG.md §3.
@@ -52,17 +95,18 @@ _Last updated: 2026-10-05 - Iteration 5_
 - **Done (plan phases A–E complete):**
   - The engine reproduces `SLA_Expected_Results.xlsx` exactly (0 diffs, csv and xlsx).
   - The backend builds 22 monthly packs from the extract set, auto-loaded on a cold start.
-  - Every screen runs on the real data with the original design: Dashboard, Extracts, SLA
-    position, Exceptions, Governance pack, and Intelligence (including the guarded Bedrock
+  - Every screen runs on the real data with the original design: Dashboard, Data Sources, SLA
+    Status, Exceptions, Governance pack, and Intelligence (including the guarded Bedrock
     narrative and Q&A).
   - README rewritten. `npm test` passes 24/24.
-- **Open:** September/October dataset extension, pending the choice between
-  generated demo records and newer supplied extracts. Original CSV/XLSX files
-  remain unchanged and pass the oracle check. Recovery instructions are in
-  `docs/data-flow.md` section 12. Merging or opening a PR is the user's decision.
-- **Documentation:** `docs/end-to-end-governance-flow.md` now traces upload through
-  rule evaluation, monthly JSON persistence, APIs and every governance screen, with
-  an actual 23B UL Step 2 item as the worked example.
+- **Presenter's briefing** (Iteration 4, private):
+  https://claude.ai/artifact/PrWoChV2v16Ez4eKeemUr2. It covers architecture, data flow,
+  proof, demo script and Q&A. Republish from the same conversation, or pass that URL, to
+  update it.
+- **Open:**
+  - user review; merging or opening a PR is the user's decision
+  - before real extracts: DEV_LOG.md Phase F. F1 is a header-less EBQ reader, F2 is to
+    extend the holiday calendar past 2026-08-03.
 
 ---
 
@@ -179,18 +223,64 @@ Add to this list whenever something bites.
   extract. It is now rejected explicitly.
 - Charts: a month with one or two completed items can sit at 0%. Clip such values at the
   axis with a label rather than letting them set the scale.
-- JSON boundary: file upload is multipart bytes; rules evaluate in-memory JavaScript
-  objects, not JSON packets. JSON is used for config, persisted packs/snapshot/index,
-  API responses and the Q&A request body.
+- **The real EBQ report has no header row.** The synthetic copy in `Claude_Data/` has one
+  added (see the workbook README). Header-based identification will reject the real file.
+  This is Phase F1.
+- The holiday calendar is exactly the workbook's list and ends 2026-08-03. Extend it
+  before loading later extracts (Phase F2).
+- Verification scale, for quoting: 14,898 rows per format (six tabs) plus 176
+  month-by-SLA results. It is not 16,898.
 
 **UI conventions**
+
+- Model connectivity is separate from the chatbot redesign: successful Nova calls do not
+  add forecasting or multi-turn reasoning. Keep the active scope clear to the user.
+- Cache identity must include the provider/model/region. A report-only cache hash can keep
+  serving a rules summary after credentials are added. Never include credential values in
+  cache keys, logs or tracked files. Restart the server after changing `.env`.
+- Keep Governance pack visibly accessible: hiding it only inside a per-period menu made
+  the user think the feature had been removed. Export is the browser's PDF workflow;
+  explain the Save as PDF step beside the button.
+- Customer copy is adapted in `src/lib/customerCopy.js` at the frontend API boundary.
+  Keep legacy storage paths, IDs, filenames, outcome values and numeric evidence intact;
+  do not rewrite raw files or rebuild packs for wording changes. Saved findings and cached
+  narratives can contain old wording, so updating JSX alone is insufficient.
+- "Policies" counts service records, not distinct policy numbers. Keep the count note.
+- A live user can replace imports during verification. Save a per-run data baseline and
+  distinguish changed source metadata from changed computed results; never restore old
+  imports over their changes. Iteration 7 saw a concurrent import change to mixed CSV/XLSX.
+- Documentation accuracy: `askAssistant()` applies `unsupportedFigures()` only; it does not
+  call `contradictedClaims()`. The executive narrative applies both. Do not describe Q&A as
+  having the narrative's claim checker until that checker is explicitly integrated.
 - Reuse the design system's classes and tokens (`card`, `stat`, `table`, `rag-*`,
   `scope-chip`, `cluster-row`, ...). Add CSS only in the small "SLA table and item lists"
   block.
 - Check layout with headless Edge screenshots at 1440 px:
   `msedge --headless=new --window-size=1440,1800 --virtual-time-budget=9000 --screenshot=out.png http://localhost:5174/#2026-08/position`
 
+**Demo production**
+- The current capture defaults to `.demo-work/v2/` and new run-specific data directories.
+  `capture.mjs --finish` reuses the recorded dataset and recaptures only the final report
+  screens. Never mutate the live `data/` imports for a recording.
+- Native CUR files need their alpha mask and hotspot preserved. Pillow's CUR reader returns
+  opaque RGB; `native_cursor.py` wraps the unchanged DIB entry as ICO for RGBA decoding.
+- Scroll controls into view before CDP clicks. Wait for the Intelligence closing animation
+  (800ms), not just removal of `is-open`, before capturing the report underneath.
+- Windows System.Speech may enumerate voices inside the sandbox but fail to select one.
+  The approved local process can synthesize WAV/word timing files; `voice.py --reuse-wav`
+  packages those locally without accessing the voice engine again. No external TTS is needed.
+- Use explicit 16 kHz PCM for Windows narration. Default 22.05 kHz output produced
+  word event times beyond the WAV duration. Validate word and caption intervals before
+  encoding; do not merely clamp malformed subtitles.
+- If the approved speech process cannot discover bundled FFmpeg, run only `voice-local.ps1`
+  there and package with `voice.py --reuse-wav` locally.
+- Keep Vite watching exclusions broad enough for every `deliverables/` version.
+
 **Environment (Windows)**
+
+- Browser capture profiles must be outside the Vite project root (use the OS temp directory).
+  Watching Edge's transient locked profile files can crash Vite with EBUSY. The isolated
+  recording server also ignores `.demo-work/`, `.demo-tools/` and `deliverables/`.
 - Stop the server before `npm run data:load` / `reset`, because open handles block deletes.
 - Tracked text files have **CRLF** line endings in the working copy (autocrlf). A
   `
@@ -199,6 +289,11 @@ Add to this list whenever something bites.
   the escapes get mangled. Use the Edit tool.
 - Python prints to a cp1252 console, so set `PYTHONIOENCODING=utf-8` when printing
   workbook text.
+- Artifact publishing: use the long temp path `C:\Users\OmmkarBisoi\AppData\Local\Temp\…`.
+  The 8.3 short form `OMMKAR~1` is blocked by the Read permission rule for supporting
+  files.
+- Headless Edge renders pages in the dark theme by default. Check both themes when it
+  matters.
 - There is no pandas or openpyxl. Use `exceljs` via Node (`npm install` has now been run).
 - Node 24: `node --test <dir>` fails with MODULE_NOT_FOUND. Pass a glob:
   `node --test "server/**/*.test.js"`.
