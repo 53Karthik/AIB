@@ -1,0 +1,13 @@
+.git
+.env
+.env.*
+.aws
+node_modules
+data
+.python-data
+dist
+deliverables
+.demo-tools
+.demo-work
+**/__pycache__
+**/*.pyc

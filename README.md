@@ -28,6 +28,7 @@ The earlier recording remains in `deliverables/client-demo/`; use the updated ve
 
 ```bash
 npm install
+python -m pip install -r backend/requirements.txt
 npm run dev        # API on :5174, UI on :5173
 ```
 
@@ -202,6 +203,70 @@ answers identify their provider; a cached executive summary is explicitly marked
 Q&A calls the model for each question, with the existing guards and rules fallback retained.
 
 ## Development log
+
+## Python migration (in progress)
+
+React remains unchanged; the default API is now Python. The Python engine in
+`backend/engine/` now includes CSV/XLSX readers, timestamp parsing, business calendars,
+workflow matching, all Schedule 23 rules, monthly roll-ups and overall totals. Its
+output keeps the existing JSON field names. `npm run dev`, `npm run server` and
+`npm run preview` now launch Python. Narrative/Q&A
+endpoints and the Bedrock adapter are now ported, including deterministic text,
+figure/claims guards, provider-aware caches and error fallback. Live AWS calls
+have not been validated; model paths are tested without contacting AWS.
+Core API routes and intelligence calculations
+are now ported, including scoped history, trends and overdue backlog. Storage,
+slot replacement, imports, data-quality findings,
+failure concentrations and monthly pack generation are now available in Python.
+Pipeline parity tests compare all 22 packs and the snapshot against JavaScript,
+excluding the rebuild timestamp, using isolated temporary directories.
+
+Install the XLSX dependency and run Python tests from the project directory.
+The parity tests require Node and the existing npm dependencies; they compare
+every item, workflow, monthly result and total against the JavaScript engine for
+both delivered source formats. They do not modify application data.
+
+```bash
+python -m pip install -r backend/requirements.txt
+python -m pip install -r backend/requirements-dev.txt
+python -m unittest discover -s backend/tests -v
+python -m backend --format csv
+python -m backend --format xlsx
+```
+
+To import CSV extracts and persist Python-generated packs in a separate directory:
+
+```bash
+python -m backend --load-data --data-dir .python-data
+```
+
+This command requires an explicit output directory and refuses the active
+backend's data directory. Do not run both backends against the same directory.
+Normal evaluation without `--load-data` remains read-only. Existing `data/` state
+and `DATA_DIR` are compatible with the Python backend. Stop the Node API before
+starting Python against the same directory; do not run simultaneous writers.
+
+For isolated Python API development in PowerShell:
+
+```powershell
+$env:DATA_DIR = ".python-data"
+$env:PORT = "5175"
+python -m backend.server
+```
+
+This entrypoint loads `.env` without overriding exported values and serves all
+existing API routes and the built React UI. Nova uses boto3 Converse; Anthropic
+models use the Bedrock native messages invocation. Both keep AWS credentials
+server-side. Deterministic narrative text, grounding facts and Q&A answers are
+parity-tested against JavaScript. Set `PYTHON_BIN` to the Python executable path
+when it is not available as `python`. Node is still required for React/Vite builds.
+Use `npm run dev:node` or `npm run server:node` to roll back the API to Node.
+Legacy Node utilities and dependencies remain for parity testing and rollback.
+
+Render now uses `Dockerfile`, which builds React with Node and serves it with Python.
+The EC2 setup script installs a Python virtual environment and launches the Python
+server through PM2. Neither deployment has been applied to a live host. Run
+`npm run bedrock:check` to verify live AWS access through the Python adapter.
 
 [`DEV_LOG.md`](DEV_LOG.md) records the plan, every iteration's changes, the errors hit and how
 they were fixed. [`CLAUDE.md`](CLAUDE.md) holds the working rules and known pitfalls.

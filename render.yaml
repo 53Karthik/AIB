@@ -1,15 +1,11 @@
-# Render blueprint. The app is a single Node process: Express serves the API and the built
-# Vite frontend from dist/, so there is nothing to split into a separate static site.
+# Render blueprint: the Docker image serves the Python API and built React UI.
 services:
   - type: web
     name: aib-life-sla-governance
-    runtime: node
+    runtime: docker
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: node server/index.js
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: NODE_VERSION
-        value: "22"
       # Point writable state at a mounted disk. On the free plan there is no disk, so this
       # resolves to the ephemeral filesystem and the server loads the delivered extracts from Claude_Data/ on
       # each cold start. Add a disk (paid plan) and uploads survive restarts.

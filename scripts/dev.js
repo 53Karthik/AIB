@@ -8,14 +8,22 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
 const children = [
-  spawn(process.execPath, ['server/index.js'], { cwd: ROOT, stdio: 'inherit' }),
+  process.argv.includes('--node-backend')
+    ? spawn(process.execPath, ['server/index.js'], { cwd: ROOT, stdio: 'inherit' })
+    : spawn(process.env.PYTHON_BIN || 'python', ['-m', 'backend.server'], { cwd: ROOT, stdio: 'inherit' }),
   spawn(npx, ['vite'], { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' }),
 ];
 
-const shutdown = () => {
+const shutdown = (code = 0) => {
   for (const c of children) if (!c.killed) c.kill();
-  process.exit(0);
+  process.exit(code);
 };
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-for (const c of children) c.on('exit', shutdown);
+process.on('SIGINT', () => shutdown());
+process.on('SIGTERM', () => shutdown());
+for (const child of children) {
+  child.on('exit', (code) => shutdown(code ?? 1));
+  child.on('error', (error) => {
+    console.error(`Could not start development process: ${error.message}`);
+    shutdown(1);
+  });
+}

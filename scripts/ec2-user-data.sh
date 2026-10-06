@@ -13,7 +13,7 @@ echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
 # Install dependencies
 yum update -y
 curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
-yum install -y nodejs git
+yum install -y nodejs git python3 python3-pip
 
 # Set up the application directory
 mkdir -p /app
@@ -22,15 +22,20 @@ git clone https://github.com/Sravanth10/AIB.git .
 
 npm install
 npm run build
+python3 -m venv /app/.venv
+/app/.venv/bin/python -m pip install -r /app/backend/requirements.txt
 
 npm install -g pm2
 
 # Start the server on port 80
-cat << 'EOF' > /app/ecosystem.config.js
+cat << 'EOF' > /app/ecosystem.config.cjs
 module.exports = {
   apps : [{
     name   : "aib-proto",
-    script : "./server/index.js",
+    script : "/app/.venv/bin/python",
+    args   : "-m backend.server",
+    interpreter : "none",
+    cwd    : "/app",
     env: {
       PORT: 80,
       HOST: "0.0.0.0"
@@ -39,7 +44,7 @@ module.exports = {
 }
 EOF
 
-pm2 start /app/ecosystem.config.js
+pm2 start /app/ecosystem.config.cjs
 pm2 save
 pm2 startup | tail -n 1 | bash
 
@@ -56,6 +61,7 @@ if [ "$LOCAL" != "$REMOTE" ]; then
     git reset --hard origin/main
     npm install
     npm run build
+    /app/.venv/bin/python -m pip install -r /app/backend/requirements.txt
     pm2 restart aib-proto
 fi
 EOF

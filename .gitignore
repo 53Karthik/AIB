@@ -7,6 +7,8 @@ dist/
 # runtime state — the imported extract set, the monthly packs built from it and the
 # narrative cache. Rebuilt by `npm run data:load`, or automatically on server start.
 data/
+.python-data/
+.venv/
 
 # The delivered BaNCS extracts in Claude_Data/ ARE committed, so the repo runs straight
 # after clone.
